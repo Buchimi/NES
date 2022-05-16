@@ -111,7 +111,7 @@ impl CPU {
     fn clear_carry_flag(&mut self) {
         self.status.remove(CpuFlags::CARRY)
     }
-    
+
     pub fn load_and_run(&mut self, program: Vec<u8>) {
         self.load(program);
         self.reset();
@@ -175,14 +175,23 @@ impl CPU {
     }
 
     pub fn run(&mut self) {
-        let ref opcodes: HashMap<u8, &'static opcodes::OpCode> = *opcodes::OPCODES_MAP;
+        self.run_with_callback(|_| {})
+    }
 
+    pub fn run_with_callback<F>(&mut self, mut callback: F)
+    where
+        F: FnMut(&mut CPU),
+    {
+        let ref opcodes:HashMap<u8, &'static opcodes::OpCode> = *opcodes::OPCODES_MAP;
         loop {
+            callback(self);
             let code = self.mem_read(self.program_counter);
             self.program_counter += 1;
             let program_counter_state = self.program_counter;
 
-            let opcode = opcodes.get(&code).expect(&format!("OpCode {:x} is not recognized", code));
+            let opcode = opcodes
+                .get(&code)
+                .expect(&format!("OpCode {:x} is not recognized", code));
 
             match code {
                 0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => {
@@ -474,7 +483,7 @@ impl CPU {
             }
         }
     }
-    
+
     pub fn interpret(&mut self, program: Vec<u8>) {
         self.program_counter = 0;
         loop {
@@ -512,20 +521,20 @@ impl CPU {
         }
     }
 
-    fn ldy(&mut self, mode: &AddressingMode){
+    fn ldy(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         let data = self.mem_read(addr);
         self.register_y = data;
         self.update_zero_and_negative_flags(self.register_y);
     }
-    
-    fn ldx(&mut self, mode: &AddressingMode){
+
+    fn ldx(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         let data = self.mem_read(addr);
         self.register_x = data;
         self.update_zero_and_negative_flags(self.register_x);
     }
-    
+
     fn lda(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
 
@@ -539,7 +548,7 @@ impl CPU {
         self.register_a = value;
         self.update_zero_and_negative_flags(self.register_a);
     }
-    
+
     /// note: ignoring decimal mode
     /// http://www.righto.com/2012/12/the-6502-overflow-flag-explained.html
     fn add_to_register_a(&mut self, data: u8) {
@@ -569,8 +578,7 @@ impl CPU {
 
         self.set_register_a(result);
     }
-    
-    
+
     fn sbc(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(&mode);
         let data = self.mem_read(addr);
@@ -811,8 +819,7 @@ impl CPU {
             self.program_counter = jump_addr;
         }
     }
-    
-    
+
     fn and(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         let data = self.mem_read(addr);
@@ -830,7 +837,7 @@ impl CPU {
         let data = self.mem_read(addr);
         self.set_register_a(data | self.register_a);
     }
-    
+
     fn iny(&mut self) {
         self.register_y = self.register_y.wrapping_add(1);
         self.update_zero_and_negative_flags(self.register_y);
