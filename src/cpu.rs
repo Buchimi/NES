@@ -53,7 +53,7 @@ pub enum AddressingMode {
     NoneAddressing,
 }
 
-trait Mem {
+pub trait Mem {
     fn mem_read(&self, addr: u16) -> u8;
 
     fn mem_write(&mut self, addr: u16, data: u8);
@@ -112,6 +112,7 @@ impl CPU {
         self.status.remove(CpuFlags::CARRY)
     }
 
+    #[allow(dead_code)]
     pub fn load_and_run(&mut self, program: Vec<u8>) {
         self.load(program);
         self.reset();
@@ -484,6 +485,7 @@ impl CPU {
         }
     }
 
+    #[allow(dead_code)]
     pub fn interpret(&mut self, program: Vec<u8>) {
         self.program_counter = 0;
         loop {
