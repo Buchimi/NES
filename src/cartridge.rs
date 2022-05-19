@@ -20,8 +20,8 @@ pub struct Rom {
 impl Rom {
     pub fn new(raw: &Vec<u8>) -> Result<Rom, String> {
         //Parse the header file by reading the bytes
-        if raw[0..4] != NES_TAG {
-            return Err("File is not in iNES format".to_string());
+        if &raw[0..4] != NES_TAG {
+            return Err("File is not in iNES file format".to_string());
         }
 
         let mapper = (raw[7] & 0b1111_0000) | (raw[6] >> 4);
@@ -30,7 +30,7 @@ impl Rom {
 
         let ines_ver = (raw[7] >> 2) & 0b11;
         if ines_ver != 0 {
-            return Err("iNES2.0 format is not supported".to_string());
+            return Err("NES2.0 format is not supported".to_string());
             //we only support iNES 1.0 if ines_ver was 0b10, then it would be 2.0
         }
 
@@ -53,7 +53,7 @@ impl Rom {
         //skip the 16 byte header that we already looked through
         //if we have a trainer file, skip that too
 
-        let chr_rom_start = prg_rom_size + prg_rom_size;
+        let chr_rom_start = prg_rom_start + prg_rom_size;
         //char rom is after prg_rom
 
         Ok(Rom {
