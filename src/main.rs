@@ -1,6 +1,10 @@
+mod bus;
+mod cartridge;
 mod cpu;
 mod opcodes;
 
+use bus::*;
+use cartridge::Rom;
 use cpu::*;
 
 use rand::Rng;
@@ -76,7 +80,11 @@ fn main() {
         .unwrap();
 
     //load the game in the CPU
-    let mut cpu = CPU::new();
+    let bytes: Vec<u8> = std::fs::read("snake.nes").unwrap();
+    let rom = Rom::new(&bytes).unwrap();
+
+    let bus = Bus::new(rom);
+    let mut cpu = CPU::new(bus);
     cpu.load(game_code);
     cpu.reset();
     //end load program
